@@ -2,9 +2,12 @@ var circleArrow = {
   svgns: "http://www.w3.org/2000/svg",
   defaultOptions: {
     colors: ['red', 'green', 'blue'],
+    labels: [],
+    startAngle: 180,
     cx: 150,
     cy: 150,
     radius: 100,
+    labelRadius: 150,
     arrowWidth: 30,
     background: 'black',
     separatorWidth: 5
@@ -36,14 +39,21 @@ var circleArrow = {
     }
   },
 
-  createElement: function (svgContainer, type, attributes) {
+  centerElement: function (element) {
+    var bbox = element.getBBox();
+
+    element.setAttribute('x', element.getAttribute('x') - bbox.width  / 2);
+    element.setAttribute('y', element.getAttribute('y') + bbox.height  / 2);
+  },
+
+  createElement: function (type, attributes, html) {
     var element = document.createElementNS(this.svgns, type);
 
     Object.keys(attributes).forEach(function (key) {
       element.setAttribute(key, attributes[key]);
     });
-
-    svgContainer.appendChild(element);
+    element.innerHTML = html;
+    return element;
   },
 
   regularArcData: function (cx, cy, radius, startDegrees, endDegrees, isCounterClockwise) {
@@ -81,10 +91,10 @@ var circleArrow = {
     return points.map(function (point) {return point.x + "," + point.y}).join(" ");
   },
 
-  createShaft: function (svgContainer, index, startDegrees, endDegrees, color, options) {
-    this.createElement(svgContainer, 'path', {
+  createShaft: function (index, startDegrees, endDegrees, color, options) {
+    return this.createElement('path', {
       id: options.containerId + '-shaft-' + index,
-      class: 'circle-arrow-shaft',
+      class: 'circle-arrow-shaft arrow-' + index,
       fill: 'none',
       stroke: color,
       'stroke-width': options.arrowWidth,
@@ -92,7 +102,7 @@ var circleArrow = {
     })
   },
 
-  createHead: function (svgContainer, index, endDegrees, color, options) {
+  createHead: function (index, endDegrees, color, options) {
     var hc = this.findHeadCenter(endDegrees, options),
       points = [
         this.positionInCircle(hc.x, hc.y, options.arrowWidth, this.toRadian(endDegrees + 330)),
@@ -100,16 +110,16 @@ var circleArrow = {
         this.positionInCircle(hc.x, hc.y, options.arrowWidth, this.toRadian(endDegrees + 90))
       ];
 
-    this.createElement(svgContainer, 'polygon', {
+    return this.createElement('polygon', {
       id: options.containerId + '-head-' + index,
-      class: 'circle-arrow-separator',
+      class: 'circle-arrow-separator arrow-' + index,
       fill: color,
       stroke: 'none',
       points: this.makePolygonPoints(points)
     });
   },
 
-  createSeparator: function (svgContainer, index, endDegrees, options) {
+  createSeparator: function (index, endDegrees, options) {
     if (options.separatorWidth == 0) {
       return;
     }
@@ -124,13 +134,29 @@ var circleArrow = {
         this.positionInCircle(hc.x, hc.y, options.arrowWidth, this.toRadian(endDegrees + 90))
       ];
 
-    this.createElement(svgContainer, 'polygon', {
+    return this.createElement('polygon', {
       id: options.containerId + '-separator-' + index,
       class: 'circle-arrow-separator',
       fill: options.background,
       stroke: 'none',
       points: this.makePolygonPoints(points)
-    })
+    });
+  },
+
+  createLabel: function (index, middleDegrees, options) {
+    var position = this.positionInCircle(options.cx, options.cy, options.labelRadius, this.toRadian(middleDegrees)),
+      label = options.labels[index],
+      labelElement;
+
+    if (typeof(label) == 'undefined' || label  == null) {
+      return;
+    }
+
+    return  this.createElement('text', {
+      class: 'circle-arrow-label  arrow-' + index,
+      x: position.x,
+      y: position.y
+    }, label);
   },
 
   addCircleArrow: function (opts) {
@@ -138,16 +164,37 @@ var circleArrow = {
       svgContainer = document.getElementById(options.containerId),
       colorCount = options.colors.length,
       angle = 360 / colorCount,
-      index = 0;
+      separators = [],
+      heads = [],
+      shafts = [],
+      labels = [];
 
     options.colors.forEach(function (color, index) {
-      var startDegrees = angle * index,
-        endDegrees = angle * (index + 1),
-        prevColor = options.colors[(index - 1 + colorCount) % colorCount]
+      var startDegrees = options.startAngle + angle * index,
+        endDegrees = options.startAngle + angle * (index + 1),
+        middleDegrees = startDegrees + angle / 2;
 
-      this.createShaft(svgContainer, index, startDegrees, endDegrees, color, options);
-      this.createHead(svgContainer, index, startDegrees, prevColor, options);
-      this.createSeparator(svgContainer, index, startDegrees, options);
+      shafts.push(this.createShaft(index, startDegrees, endDegrees, color, options));
+      heads.push(this.createHead(index, endDegrees, color, options));
+      separators.push(this.createSeparator(index, startDegrees, options));
+      labels.push(this.createLabel(index, middleDegrees, options));
+    }, this);
+
+    [shafts, separators, heads, labels].forEach(function (elements) {
+      elements.forEach(function (element) {
+        if (typeof(element) == 'undefined') {
+          return;
+        }
+        svgContainer.appendChild(element);
+      }, this);
+    }, this);
+
+    labels.forEach(function (label) {
+      if (typeof(element) == 'undefined') {
+        return;
+      }
+
+      this.centerElement(label);
     }, this);
   }
 }

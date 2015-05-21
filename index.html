@@ -6,9 +6,21 @@
     <svg id="sample1" height="400" width="800"></svg>
     Basic options
 
+    <svg id="sample2" height="400" width="800">
+    </svg>
+    With labels
+
     <script src="src/circle-arrow.js"></script>
     <script>
-      circleArrow.addCircleArrow({containerId: 'sample1', background: 'white'})
+      circleArrow.addCircleArrow({containerId: 'sample1', background: 'white'});
+      circleArrow.addCircleArrow({
+        cx: 400,
+        cy: 200,
+        radius: 100,
+        containerId: 'sample2',
+        background: 'white',
+        labels: ['First arrow', 'Second arrow','Third arrow']
+      })
     </script>
   </body>
 </html>

@@ -1,8 +1,7 @@
 var circleArrow = {
   svgns: "http://www.w3.org/2000/svg",
   defaultOptions: {
-    colors: ['red', 'green', 'blue'],
-    labels: [],
+    arrows: ['red', 'green', 'blue'],
     startAngle: 180,
     cx: 150,
     cy: 150,
@@ -91,7 +90,9 @@ var circleArrow = {
     return points.map(function (point) {return point.x + "," + point.y}).join(" ");
   },
 
-  createShaft: function (index, startDegrees, endDegrees, color, options) {
+  createShaft: function (index, startDegrees, endDegrees, arrow, options) {
+    var color = arrow.color || arrow;
+
     return this.createElement('path', {
       id: options.containerId + '-shaft-' + index,
       class: 'circle-arrow-shaft arrow-' + index,
@@ -102,8 +103,9 @@ var circleArrow = {
     })
   },
 
-  createHead: function (index, endDegrees, color, options) {
-    var hc = this.findHeadCenter(endDegrees, options),
+  createHead: function (index, endDegrees, arrow, options) {
+    var color = arrow.color || arrow,
+      hc = this.findHeadCenter(endDegrees, options),
       points = [
         this.positionInCircle(hc.x, hc.y, options.arrowWidth, this.toRadian(endDegrees + 330)),
         this.positionInCircle(hc.x, hc.y, options.arrowWidth, this.toRadian(endDegrees + 210)),
@@ -143,9 +145,9 @@ var circleArrow = {
     });
   },
 
-  createLabel: function (index, middleDegrees, options) {
+  createLabel: function (index, middleDegrees, arrow, options) {
     var position = this.positionInCircle(options.cx, options.cy, options.labelRadius, this.toRadian(middleDegrees)),
-      label = options.labels[index],
+      label = arrow.label,
       labelElement;
 
     if (typeof(label) == 'undefined' || label  == null) {
@@ -154,30 +156,32 @@ var circleArrow = {
 
     return  this.createElement('text', {
       class: 'circle-arrow-label  arrow-' + index,
-      x: position.x,
-      y: position.y
+      x: position.x + (arrow.labelx || 0),
+      y: position.y + (arrow.labely || 0)
     }, label);
   },
 
   addCircleArrow: function (opts) {
     var options = this.makeOptions(opts),
-      svgContainer = document.getElementById(options.containerId),
-      colorCount = options.colors.length,
-      angle = 360 / colorCount,
+      svgContainer = document.getElementById(options.containerId),      
+      angle = 360 / options.arrows.map(function (arr) {return arr.weight || 1; }).reduce(function(pv, cv) { return pv + cv; }, 0),
       separators = [],
       heads = [],
       shafts = [],
-      labels = [];
+      labels = [],
+      startDegrees = options.startAngle;
 
-    options.colors.forEach(function (color, index) {
-      var startDegrees = options.startAngle + angle * index,
-        endDegrees = options.startAngle + angle * (index + 1),
-        middleDegrees = startDegrees + angle / 2;
+    options.arrows.forEach(function (arrow, index) {
+      var arrowAngle = angle * (arrow.weight || 1),
+        endDegrees = startDegrees + arrowAngle,
+        middleDegrees = startDegrees + arrowAngle / 2;
 
-      shafts.push(this.createShaft(index, startDegrees, endDegrees, color, options));
-      heads.push(this.createHead(index, endDegrees, color, options));
+      shafts.push(this.createShaft(index, startDegrees, endDegrees, arrow, options));
+      heads.push(this.createHead(index, endDegrees, arrow, options));
       separators.push(this.createSeparator(index, startDegrees, options));
-      labels.push(this.createLabel(index, middleDegrees, options));
+      labels.push(this.createLabel(index, middleDegrees, arrow, options));
+
+      startDegrees = endDegrees;
     }, this);
 
     [shafts, separators, heads, labels].forEach(function (elements) {

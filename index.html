@@ -3,24 +3,93 @@
     <title>circle-arrow samples</title>
   </head>
   <body>
-    <svg id="sample1" height="400" width="800"></svg>
-    Basic options
+    <figure>
+      <svg id="sample1" height="400" width="800"></svg>
+      <figcaption>Basic options</figcaption>
+    </figure>
 
-    <svg id="sample2" height="400" width="800">
-    </svg>
-    With labels
+    <figure>
+      <svg id="sample2" height="400" width="800"></svg>
+      <figcaption>With labels and custom colors</figcaption>
+    </figure>
+
+    <figure>
+      <svg id="sample3" height="400" width="800"></svg>
+      <figcaption>Using weight on arrows to change size</figcaption>
+    </figure>
+
+    <figure>
+      <svg id="sample4" height="400" width="800"></svg>
+      <figcaption>Using labelx/y to place labels fine</figcaption>
+    </figure>
 
     <script src="src/circle-arrow.js"></script>
     <script>
       circleArrow.addCircleArrow({containerId: 'sample1', background: 'white'});
+
       circleArrow.addCircleArrow({
         cx: 400,
         cy: 200,
         radius: 100,
         containerId: 'sample2',
         background: 'white',
-        labels: ['First arrow', 'Second arrow','Third arrow']
+        arrows: [
+          {
+            color: 'blue',
+            label: 'First arrow'
+          },
+          {
+            color: 'cyan',
+            label: 'Second arrow'
+          },
+          {
+            color: 'purple',
+            label: 'Third arrow'
+          }
+        ]
       })
+
+      circleArrow.addCircleArrow({
+        cx: 400,
+        cy: 200,
+        radius: 100,
+        containerId: 'sample3',
+        background: 'white',
+        arrows: [
+          {
+            color: 'blue',
+            label: 'Default weight is one'
+          },
+          {
+            color: 'cyan',
+            label: 'This one has a weight of three',
+            weight: 3
+          }
+        ]
+      });
+
+      circleArrow.addCircleArrow({
+        cx: 400,
+        cy: 200,
+        radius: 100,
+        containerId: 'sample4',
+        background: 'white',
+        arrows: [
+          {
+            color: 'red',
+            label: 'This is a really long label that would overlap',
+            labelx: -250
+          },
+          {
+            color: 'orange',
+            label: 'Not this one',
+            labely: 20
+          },
+          'blue',
+          'purple',
+          'indigo'
+        ]
+      });
     </script>
   </body>
 </html>

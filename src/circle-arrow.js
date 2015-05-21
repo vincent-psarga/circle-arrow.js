@@ -133,7 +133,7 @@ var circleArrow = {
         this.positionInCircle(hc.x, hc.y, options.arrowWidth + options.separatorWidth, this.toRadian(endDegrees + 90)),
         this.positionInCircle(hc.x, hc.y, options.arrowWidth + options.separatorWidth, this.toRadian(endDegrees + 210)),
         this.positionInCircle(hc.x, hc.y, options.arrowWidth, this.toRadian(endDegrees + 210)),
-        this.positionInCircle(hc.x, hc.y, options.arrowWidth, this.toRadian(endDegrees + 90))
+        this.positionInCircle(hc.x, hc.y, options.arrowWidth - options.separatorWidth, this.toRadian(endDegrees + 90))
       ];
 
     return this.createElement('polygon', {
